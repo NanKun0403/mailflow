@@ -1,0 +1,5 @@
+# Render 合并部署专用：Caddy 监听 Render 注入的端口，其余行为与 sites-off（TLS_MODE=off）一致，
+# 复用上游 Caddyfile 的 (app) 块 —— /api、/oauth、/ws、/carddav、备份流、静态回退全部原样。
+:{$RENDER_PORT:10000} {
+	import app http
+}
