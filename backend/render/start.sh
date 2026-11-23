@@ -18,7 +18,16 @@ XDG_DATA_HOME=${XDG_DATA_HOME:-/tmp/caddy-data} caddy run \
 	--config /etc/caddy/Caddyfile --adapter caddyfile &
 CADDY_PID=$!
 
-echo "mailflow-merge: backend=$NODE_PID caddy=$CADDY_PID (public :$RENDER_PORT -> backend :$BACKEND_PORT)"
+# 容器内自保活：每 4 分钟 curl 自家 /api/health，让 Render 看到持续流量。
+# （内部流量是否阻止免费实例休眠未经官方确认——见 keepalive.sh 头部说明；
+#   无效也无害，想关掉把 KEEPALIVE_ENABLED=false 加进 Render 环境变量。）
+KEEPALIVE_PID=""
+if [ "${KEEPALIVE_ENABLED:-true}" = "true" ]; then
+	sh /usr/local/bin/mailflow-keepalive &
+	KEEPALIVE_PID=$!
+fi
+
+echo "mailflow-merge: backend=$NODE_PID caddy=$CADDY_PID keepalive=${KEEPALIVE_PID:-off} (public :$RENDER_PORT -> backend :$BACKEND_PORT)"
 
 while :; do
 	if ! kill -0 "$NODE_PID" 2>/dev/null; then

@@ -59,12 +59,13 @@ COPY --from=caddy /usr/bin/caddy /usr/local/bin/caddy
 COPY frontend/caddy/Caddyfile /etc/caddy/Caddyfile
 COPY backend/render/sites-merge.caddy /etc/caddy/sites-merge.caddy
 COPY backend/render/start.sh /usr/local/bin/mailflow-render-start
+COPY backend/render/keepalive.sh /usr/local/bin/mailflow-keepalive
 
 RUN APP_VERSION_VALUE="$(node -p "require('./package.json').version")"; \
     APP_VERSION_VALUE="$(printf '%s' "$APP_VERSION_VALUE" | sed 's/^v[.]//' | sed 's/^v//')"; \
     printf '{"version":"%s"}\n' "$APP_VERSION_VALUE" > ./build-meta.json && \
     mkdir -p /var/cache/mailflow/images && \
-    chmod +x /usr/local/bin/mailflow-render-start && \
+    chmod +x /usr/local/bin/mailflow-render-start /usr/local/bin/mailflow-keepalive && \
     chown -R node:node /app /srv /var/cache/mailflow
 
 USER node
